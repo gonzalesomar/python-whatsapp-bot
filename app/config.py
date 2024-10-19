@@ -5,7 +5,7 @@ import logging
 
 
 def load_configurations(app):
-    load_dotenv()
+    load_dotenv(dotenv_path="keys.env")
     app.config["ACCESS_TOKEN"] = os.getenv("ACCESS_TOKEN")
     app.config["YOUR_PHONE_NUMBER"] = os.getenv("YOUR_PHONE_NUMBER")
     app.config["APP_ID"] = os.getenv("APP_ID")
@@ -14,7 +14,6 @@ def load_configurations(app):
     app.config["VERSION"] = os.getenv("VERSION")
     app.config["PHONE_NUMBER_ID"] = os.getenv("PHONE_NUMBER_ID")
     app.config["VERIFY_TOKEN"] = os.getenv("VERIFY_TOKEN")
-
 
 def configure_logging():
     logging.basicConfig(

@@ -3,7 +3,7 @@ from flask import current_app, jsonify
 import json
 import requests
 
-# from app.services.openai_service import generate_response
+from app.services.openai_service import generate_response
 import re
 
 
@@ -25,36 +25,54 @@ def get_text_message_input(recipient, text):
     )
 
 
-def generate_response(response):
-    # Return text in uppercase
-    return response.upper()
+# def generate_response(response):
+#     # Return text in uppercase
+#     return response.upper()
 
 
+# def send_message(data):
+#     logging.info(data)
+#     headers = {
+#         "Content-type": "application/json",
+#         "Authorization": f"Bearer {current_app.config['ACCESS_TOKEN']}",
+#     }
+#     url = "https://graph.facebook.com" + f"/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
+#     try:
+#         response = requests.post(
+#             url, data=data, headers=headers, timeout=10
+#         )  # 10 seconds timeout as an example
+#         response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+#     except requests.Timeout:
+#         logging.error("Timeout occurred while sending message")
+#         return jsonify({"status": "error", "message": "Request timed out"}), 408
+#     except (
+#         requests.RequestException
+#     ) as e:  # This will catch any general request exception
+#         logging.error(f"Request failed due to: {e}")
+#         return jsonify({"status": "error", "message": "Failed to send message"}), 500
+#     else:
+#         # Process the response as normal
+#         log_http_response(response)
+#         return response
 def send_message(data):
     headers = {
         "Content-type": "application/json",
         "Authorization": f"Bearer {current_app.config['ACCESS_TOKEN']}",
     }
 
-    url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
+    url = "https://graph.facebook.com" + f"/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
 
-    try:
-        response = requests.post(
-            url, data=data, headers=headers, timeout=10
-        )  # 10 seconds timeout as an example
-        response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-    except requests.Timeout:
-        logging.error("Timeout occurred while sending message")
-        return jsonify({"status": "error", "message": "Request timed out"}), 408
-    except (
-        requests.RequestException
-    ) as e:  # This will catch any general request exception
-        logging.error(f"Request failed due to: {e}")
-        return jsonify({"status": "error", "message": "Failed to send message"}), 500
-    else:
-        # Process the response as normal
-        log_http_response(response)
+    response = requests.post(url, data=data, headers=headers)
+    if response.status_code == 200:
+        print("Status:", response.status_code)
+        print("Content-type:", response.headers["content-type"])
+        print("Body:", response.text)
         return response
+    else:
+        print(response.status_code)
+        print(response.text)
+        return response
+
 
 
 def process_text_for_whatsapp(text):
@@ -83,11 +101,11 @@ def process_whatsapp_message(body):
     message_body = message["text"]["body"]
 
     # TODO: implement custom function here
-    response = generate_response(message_body)
+    # response = generate_response(message_body)
 
     # OpenAI Integration
-    # response = generate_response(message_body, wa_id, name)
-    # response = process_text_for_whatsapp(response)
+    response = generate_response(message_body, wa_id, name)
+    response = process_text_for_whatsapp(response)
 
     data = get_text_message_input(current_app.config["RECIPIENT_WAID"], response)
     send_message(data)
